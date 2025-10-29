@@ -1,0 +1,973 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>MinimalShop — Modern E-commerce Demo</title>
+<meta name="description" content="Modern minimal e-commerce demo with animated login/signup, product search, cart and checkout.">
+
+<style>
+  /* -------------------------
+     THEME VARIABLES
+     ------------------------- */
+  :root{
+    --bg: #ffffff;
+    --text: #0b1321;
+    --muted: #6b7280;
+    --accent: #2563eb;
+    --accent-2: #0ea5e9;
+    --card: #f8fafc;
+    --glass: rgba(11,19,33,0.04);
+    --success: #10b981;
+    --danger: #ef4444;
+    --radius: 12px;
+    --max-width: 1100px;
+  }
+
+  /* -------------------------
+     BASE RESET
+     ------------------------- */
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background:var(--bg);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    line-height:1.45;
+  }
+  a{color:inherit;text-decoration:none}
+  img{max-width:100%;display:block}
+
+  /* -------------------------
+     LAYOUT
+     ------------------------- */
+  .container{
+    width:95%;
+    max-width:var(--max-width);
+    margin:0 auto;
+    padding:24px 0;
+  }
+
+  header{
+    position:sticky;
+    top:0;
+    z-index:60;
+    backdrop-filter: blur(6px);
+    background: linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0.6));
+    border-bottom: 1px solid rgba(11,19,33,0.06);
+  }
+  .nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    padding:14px 0;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-weight:700;
+    font-size:18px;
+  }
+  .logo{
+    width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    display:flex;align-items:center;justify-content:center;color:white;font-weight:700;
+    box-shadow:0 6px 18px rgba(37,99,235,0.12);
+  }
+  nav ul{display:flex;gap:12px;align-items:center;list-style:none;padding:0;margin:0}
+  nav a{padding:8px 12px;border-radius:8px;color:var(--muted);font-weight:600;font-size:14px}
+  nav a.active{color:var(--text);background:var(--glass)}
+  .actions{display:flex;gap:8px;align-items:center}
+
+  .btn{
+    background:var(--accent);
+    color:white;
+    border:none;padding:10px 14px;border-radius:10px;font-weight:700;
+    cursor:pointer;display:inline-flex;gap:8px;align-items:center;
+  }
+  .btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(37,99,235,0.12)}
+  .icon{width:18px;height:18px;display:inline-block}
+
+  /* -------------------------
+     MAIN SECTIONS
+     ------------------------- */
+  main{padding:28px 0}
+  .hero{
+    display:grid;
+    grid-template-columns:1fr 420px;
+    gap:28px;
+    align-items:center;
+    margin-bottom:28px;
+  }
+  .hero-card{
+    padding:28px;border-radius:16px;background:linear-gradient(180deg, #ffffff,#fbfdff);box-shadow:0 10px 30px rgba(2,6,23,0.04)
+  }
+  .hero h1{font-size:28px;margin:0 0 8px}
+  .hero p{margin:0 0 18px;color:var(--muted)}
+
+  .featured-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:14px;
+  }
+
+  /* product card */
+  .product{
+    background:var(--card);
+    border-radius:12px;padding:12px;display:flex;gap:12px;align-items:center;
+    transition:transform .22s ease, box-shadow .22s ease;
+  }
+  .product:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(2,6,23,0.06)}
+  .thumb{
+    width:90px;height:90px;border-radius:10px;background:linear-gradient(135deg,#eef2ff,#f1faff);
+    display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent);
+  }
+  .p-info{flex:1}
+  .p-title{font-weight:700;margin:0 0 6px;font-size:15px}
+  .p-meta{font-size:13px;color:var(--muted)}
+  .p-price{font-weight:800;color:var(--text);margin-left:auto}
+
+  /* -------------------------
+     SHOP / GRID
+     ------------------------- */
+  .controls{display:flex;gap:12px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
+  .search{
+    flex:1;display:flex;align-items:center;gap:8px;background:var(--card);padding:10px;border-radius:12px;border:1px solid rgba(11,19,33,0.03)
+  }
+  .search input{border:0;background:transparent;outline:0;font-size:14px;width:100%}
+  .select{padding:10px;border-radius:10px;border:1px solid rgba(11,19,33,0.06);background:white;font-size:14px}
+
+  .grid{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:18px;
+  }
+  .card{
+    border-radius:12px;background:white;padding:12px;border:1px solid rgba(11,19,33,0.04);
+    display:flex;flex-direction:column;gap:8px;transition:transform .18s ease;
+  }
+  .card:hover{transform:translateY(-6px)}
+  .card .image{
+    height:180px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#f8fafc,#eff6ff);
+    font-weight:700;color:var(--accent);
+  }
+  .card h3{margin:0;font-size:15px}
+  .card .desc{font-size:13px;color:var(--muted)}
+  .card .foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto}
+
+  /* -------------------------
+     MODAL / PRODUCT DETAIL
+     ------------------------- */
+  .modal-backdrop{
+    position:fixed;inset:0;background:rgba(2,6,23,0.45);display:none;place-items:center;padding:24px;z-index:120;
+  }
+  .modal{
+    width:100%;max-width:820px;background:white;border-radius:14px;padding:18px;box-shadow:0 30px 70px rgba(2,6,23,0.4)
+  }
+  .modal .grid{
+    grid-template-columns:280px 1fr;gap:18px;
+  }
+  .modal .image{height:280px;border-radius:10px}
+
+  /* -------------------------
+     CART / CHECKOUT
+     ------------------------- */
+  .cart-list{display:flex;flex-direction:column;gap:12px}
+  .cart-item{display:flex;gap:12px;align-items:center;padding:10px;border-radius:10px;background:var(--card)}
+  .qty{display:flex;align-items:center;gap:6px}
+  .small{font-size:13px;color:var(--muted)}
+
+  .summary{background:linear-gradient(180deg,#fff,#fbfdff);padding:16px;border-radius:12px;border:1px solid rgba(11,19,33,0.04)}
+  .total{font-weight:800;font-size:18px}
+
+  /* -------------------------
+     FOOTER
+     ------------------------- */
+  footer{padding:24px 0;color:var(--muted);font-size:14px;border-top:1px solid rgba(11,19,33,0.04);margin-top:36px}
+
+  /* -------------------------
+     LOGIN / SIGNUP ANIMATION
+     ------------------------- */
+  .auth-page{
+    min-height:100vh;display:grid;place-items:center;padding:28px;background:
+    linear-gradient(180deg, rgba(37,99,235,0.03), rgba(14,165,233,0.01));
+  }
+  .auth-card{
+    width:100%;max-width:920px;display:grid;grid-template-columns:1fr 420px;border-radius:14px;overflow:hidden;
+    box-shadow:0 30px 70px rgba(2,6,23,0.08);background:white;
+    animation:floatIn .6s ease both;
+  }
+  @keyframes floatIn{
+    from{transform:translateY(14px);opacity:0}
+    to{transform:translateY(0);opacity:1}
+  }
+  .auth-left{padding:36px;background:linear-gradient(180deg,#0ea5e9,#2563eb);color:white;display:flex;flex-direction:column;gap:14px}
+  .auth-left h2{margin:0;font-size:22px}
+  .auth-left p{margin:0;color:rgba(255,255,255,0.9)}
+  .auth-right{padding:28px;display:flex;align-items:center;justify-content:center}
+  .form{width:100%;max-width:320px;display:flex;flex-direction:column;gap:10px}
+  .input{padding:10px;border-radius:10px;border:1px solid rgba(11,19,33,0.06);outline:0}
+  .toggle-auth{display:flex;gap:8px;margin-bottom:6px}
+  .auth-footer{font-size:13px;color:var(--muted)}
+
+  /* -------------------------
+     WHATSAPP FLOAT BUTTON
+     ------------------------- */
+  .whatsapp{
+    position:fixed;right:18px;bottom:18px;background:linear-gradient(180deg,#06b856,#02a84a);width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;color:white;z-index:80;box-shadow:0 10px 30px rgba(2,6,23,0.18);
+  }
+
+  /* -------------------------
+     RESPONSIVE
+     ------------------------- */
+  @media (max-width:1000px){
+    .hero{grid-template-columns:1fr}
+    .featured-grid{grid-template-columns:repeat(2,1fr)}
+    .grid{grid-template-columns:repeat(3,1fr)}
+    .modal .grid{grid-template-columns:1fr}
+    .auth-card{grid-template-columns:1fr}
+  }
+  @media (max-width:700px){
+    .grid{grid-template-columns:repeat(2,1fr)}
+    nav ul{display:none}
+    .actions .mobile-menu{display:inline-flex}
+    .brand{gap:8px}
+    .product .thumb{width:76px;height:76px}
+  }
+  @media (max-width:420px){
+    .grid{grid-template-columns:repeat(1,1fr)}
+    .featured-grid{grid-template-columns:1fr}
+    .hero h1{font-size:22px}
+  }
+
+  /* focus styles */
+  :focus{outline:3px solid rgba(37,99,235,0.12);outline-offset:3px}
+
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="container nav" role="navigation" aria-label="Main navigation">
+    <div class="brand" aria-hidden="false">
+      <div class="logo" aria-hidden="true">MS</div>
+      MinimalShop
+    </div>
+
+    <nav>
+      <ul id="nav-list" role="menubar" aria-label="Primary">
+        <li><a href="#" data-route="home" class="active" role="menuitem">Home</a></li>
+        <li><a href="#" data-route="shop" role="menuitem">Shop</a></li>
+        <li><a href="#" data-route="about" role="menuitem">About</a></li>
+        <li><a href="#" data-route="contact" role="menuitem">Contact</a></li>
+        <li><a href="#" data-route="cart" role="menuitem">Cart (<span id="cart-count">0</span>)</a></li>
+      </ul>
+    </nav>
+
+    <div class="actions">
+      <button class="btn ghost" id="open-auth">Login</button>
+      <button class="btn" id="go-shop">Shop Now</button>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="container" id="app">
+
+  <!-- HOME -->
+  <section id="home" class="page">
+    <div class="hero">
+      <div class="hero-card">
+        <h1>Shop smarter. Ship faster.</h1>
+        <p>Minimal, fast and accessible storefront for all types of products — electronics, fashion, home and more.</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <button class="btn" id="cta-shop">Browse Shop</button>
+          <button class="btn ghost" id="cta-contact">Contact Us</button>
+        </div>
+        <h3 style="margin-top:20px">Featured products</h3>
+        <div class="featured-grid" id="featured-list" aria-live="polite"></div>
+      </div>
+
+      <div style="padding:18px;border-radius:12px;background:linear-gradient(180deg,#fbfdff,#ffffff);box-shadow:0 10px 30px rgba(2,6,23,0.04)">
+        <h3 style="margin:0 0 8px">Why MinimalShop?</h3>
+        <ul style="margin:0;padding-left:16px;color:var(--muted)">
+          <li>Fast, accessible UI</li>
+          <li>Multiple ways to buy — online checkout or chat via WhatsApp</li>
+          <li>Fully responsive and modern</li>
+        </ul>
+        <div style="margin-top:14px">
+          <h4 style="margin:0 0 6px">Latest arrival</h4>
+          <div class="product" style="align-items:flex-start">
+            <div class="thumb">XL</div>
+            <div class="p-info">
+              <div class="p-title">Everyday Backpack</div>
+              <div class="p-meta">Durable, 20L capacity</div>
+            </div>
+            <div class="p-price">$49</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SHOP -->
+  <section id="shop" class="page" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <h2>Shop</h2>
+      <div class="small">Showing <span id="results-count">0</span> results</div>
+    </div>
+
+    <div class="controls">
+      <div class="search" role="search" aria-label="Search products">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" style="opacity:.6"><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <input type="search" id="search" placeholder="Search for products, e.g. headphones, shoes..." aria-label="Search products">
+      </div>
+
+      <select id="category" class="select" aria-label="Filter by category">
+        <option value="">All categories</option>
+      </select>
+
+      <select id="sort" class="select" aria-label="Sort products">
+        <option value="relevance">Sort: Relevance</option>
+        <option value="price-asc">Price: Low → High</option>
+        <option value="price-desc">Price: High → Low</option>
+      </select>
+
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn ghost" id="clear-filters">Clear</button>
+      </div>
+    </div>
+
+    <div class="grid" id="product-grid" aria-live="polite"></div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="page" style="display:none">
+    <h2>About MinimalShop</h2>
+    <p class="small">MinimalShop is a demo storefront built to showcase a modern, minimal user interface for e-commerce. This project is fully front-end (HTML/CSS/JS) and simulates typical e-commerce flows: browsing, searching, adding to cart, and checkout. Replace sample products with your catalog and integrate backend/payment APIs when ready.</p>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" class="page" style="display:none">
+    <h2>Contact</h2>
+    <p class="small">Have questions? Message us on WhatsApp or send a quick message below.</p>
+
+    <form id="contact-form" style="display:flex;flex-direction:column;gap:8px;max-width:560px">
+      <input class="input" id="contact-name" placeholder="Your name" required>
+      <input class="input" id="contact-email" placeholder="Email (optional)">
+      <textarea class="input" id="contact-message" placeholder="Message" rows="5" required></textarea>
+      <div style="display:flex;gap:8px">
+        <button class="btn" type="submit">Send message</button>
+        <a class="btn ghost" id="contact-whatsapp" href="#" target="_blank" rel="noopener">Chat on WhatsApp</a>
+      </div>
+      <div id="contact-status" class="small" aria-live="polite"></div>
+    </form>
+  </section>
+
+  <!-- CART -->
+  <section id="cart" class="page" style="display:none">
+    <h2>Your cart</h2>
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:18px;margin-top:12px">
+      <div>
+        <div id="cart-list" class="cart-list" aria-live="polite"></div>
+      </div>
+      <aside>
+        <div class="summary">
+          <div class="small">Order summary</div>
+          <div style="display:flex;justify-content:space-between;margin-top:10px">
+            <div>Subtotal</div>
+            <div id="summary-sub" class="small">$0.00</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:8px">
+            <div>Shipping</div>
+            <div class="small">$5.00</div>
+          </div>
+          <hr style="margin:12px 0;border:0;border-top:1px solid rgba(11,19,33,0.04)">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="total">Total</div>
+            <div id="summary-total" class="total">$0.00</div>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <button class="btn" id="checkout-btn">Proceed to Checkout</button>
+            <button class="btn ghost" id="clear-cart">Clear</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- CHECKOUT -->
+  <section id="checkout" class="page" style="display:none">
+    <h2>Checkout</h2>
+    <div style="display:grid;grid-template-columns:1fr 380px;gap:18px;margin-top:12px">
+      <form id="checkout-form" style="display:flex;flex-direction:column;gap:10px;max-width:640px">
+        <input class="input" id="ship-name" placeholder="Full name" required>
+        <input class="input" id="ship-phone" placeholder="Phone number" required>
+        <input class="input" id="ship-email" placeholder="Email (optional)">
+        <input class="input" id="ship-address" placeholder="Shipping address" required>
+        <div style="display:flex;gap:8px">
+          <input class="input" id="ship-city" placeholder="City" required>
+          <input class="input" id="ship-postal" placeholder="Postal code" style="max-width:140px">
+        </div>
+        <div style="margin-top:8px">
+          <label class="small">Payment method (simulated)</label>
+          <select id="pay-method" class="select">
+            <option value="card">Card (demo)</option>
+            <option value="paypal">PayPal (demo)</option>
+            <option value="cod">Cash on Delivery</option>
+          </select>
+        </div>
+
+        <button class="btn" type="submit">Place Order</button>
+        <div id="checkout-status" class="small" aria-live="polite"></div>
+      </form>
+
+      <aside>
+        <div class="summary">
+          <div class="small">Your items</div>
+          <div id="checkout-items" style="display:flex;flex-direction:column;gap:8px;margin-top:8px"></div>
+          <hr style="margin:12px 0;border:0;border-top:1px solid rgba(11,19,33,0.04)">
+          <div style="display:flex;justify-content:space-between">
+            <div>Subtotal</div><div id="co-sub" class="small">$0.00</div>
+          </div>
+          <div style="display:flex;justify-content:space-between">
+            <div>Shipping</div><div class="small">$5.00</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:8px">
+            <div class="total">Total</div><div id="co-total" class="total">$0.00</div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="container">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+    <div>© <span id="year"></span> MinimalShop — Built with ♥</div>
+    <div class="small">Made for demo • Replace with your brand content</div>
+  </div>
+</footer>
+
+<!-- PRODUCT MODAL -->
+<div id="product-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="modal" role="document">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <h3 id="modal-title">Product</h3>
+      <button id="close-modal" class="btn ghost">Close</button>
+    </div>
+    <div class="grid">
+      <div class="image" id="modal-image">IMG</div>
+      <div>
+        <div id="modal-desc" class="small">Description</div>
+        <div style="display:flex;gap:12px;align-items:center;margin-top:12px">
+          <div style="font-weight:800;font-size:20px" id="modal-price">$0</div>
+          <div class="small" id="modal-category"></div>
+        </div>
+        <div style="margin-top:18px;display:flex;gap:8px;align-items:center">
+          <input id="modal-qty" class="input" type="number" min="1" value="1" style="width:90px">
+          <button class="btn" id="modal-add">Add to cart</button>
+          <a id="modal-whatsapp" class="btn ghost" target="_blank" rel="noopener">Chat on WhatsApp</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH / LOGIN -->
+<div id="auth-modal" class="modal-backdrop" aria-hidden="true">
+  <div class="auth-card" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+    <div class="auth-left">
+      <h2 id="auth-title">Welcome back</h2>
+      <p>Sign in to access your orders, wishlist and faster checkout. Or create an account — it's quick.</p>
+      <div style="margin-top:auto;font-size:13px;opacity:.95">MinimalShop • Secure • Fast</div>
+    </div>
+
+    <div class="auth-right">
+      <div style="width:100%;max-width:360px">
+        <div class="toggle-auth" role="tablist">
+          <button class="btn ghost" id="tab-login" aria-selected="true" role="tab">Login</button>
+          <button class="btn ghost" id="tab-signup" role="tab">Sign up</button>
+        </div>
+
+        <form id="login-form" class="form" style="display:block">
+          <input class="input" id="login-email" placeholder="Email" type="email" required>
+          <input class="input" id="login-pass" placeholder="Password" type="password" required>
+          <div style="display:flex;gap:8px">
+            <button class="btn" type="submit">Sign in</button>
+            <button class="btn ghost" id="login-guest" type="button">Continue as guest</button>
+          </div>
+          <div class="auth-footer">Forgot password? (demo) • By continuing you agree to terms</div>
+        </form>
+
+        <form id="signup-form" class="form" style="display:none">
+          <input class="input" id="su-name" placeholder="Full name" required>
+          <input class="input" id="su-email" placeholder="Email" type="email" required>
+          <input class="input" id="su-pass" placeholder="Password" type="password" required>
+          <div style="display:flex;gap:8px">
+            <button class="btn" type="submit">Create account</button>
+          </div>
+          <div class="auth-footer">We respect your privacy. This is a demo — no data is sent to a server.</div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WHATSAPP FLOAT (replace phone number below) -->
+<a id="whatsapp-float" class="whatsapp" href="https://wa.me/254700000000?text=Hello%20I%27m%20interested%20in%20your%20products" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 17a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    <path d="M8.5 11a4 4 0 0 1 6 3.5c0 2-1.5 3.5-3.5 3.5a6.5 6.5 0 0 1-3.3-.8L8 17l-1-.5" />
+  </svg>
+</a>
+
+<script>
+/* ----------------------------------------------------
+   SAMPLE PRODUCTS - replace with your own inventory
+   ---------------------------------------------------- */
+const PRODUCTS = [
+  { id: 'p1', title: 'Wireless Headphones', price: 59.99, category: 'Electronics', desc: 'Comfort-fit, 20h battery', color:'#eef2ff' },
+  { id: 'p2', title: 'Classic Sneakers', price: 79.00, category: 'Footwear', desc: 'Everyday comfort', color:'#fff7ed' },
+  { id: 'p3', title: 'Stainless Water Bottle', price: 22.50, category: 'Home', desc: 'Keeps drinks cold', color:'#f0fdf4' },
+  { id: 'p4', title: 'Smart Watch', price: 120.00, category: 'Electronics', desc: 'Health tracking & notifications', color:'#eff6ff' },
+  { id: 'p5', title: 'Leather Wallet', price: 34.00, category: 'Fashion', desc: 'Slim, RFID-safe', color:'#fff1f2' },
+  { id: 'p6', title: 'Scented Candle', price: 16.75, category: 'Home', desc: 'Soy wax, long burn', color:'#fef3c7' },
+  { id: 'p7', title: 'Backpack 20L', price: 49.00, category: 'Bags', desc: 'Water-resistant, laptop sleeve', color:'#eef2ff' },
+  { id: 'p8', title: 'Bluetooth Speaker', price: 39.99, category: 'Electronics', desc: 'Portable, great bass', color:'#fef3c7' },
+  { id: 'p9', title: 'Running Shorts', price: 24.00, category: 'Fashion', desc: 'Lightweight, breathable', color:'#f0fdf4' },
+  { id: 'p10', title: 'Desk Lamp', price: 29.00, category: 'Home', desc: 'Adjustable brightness', color:'#eff6ff' }
+];
+
+/* ----------------------------------------------------
+   SIMPLE CLIENT-SIDE ROUTING (show/hide sections)
+   ---------------------------------------------------- */
+const pages = ['home','shop','about','contact','cart','checkout'];
+const navLinks = document.querySelectorAll('#nav-list a');
+const sections = pages.reduce((acc,p)=>{ acc[p]=document.getElementById(p); return acc },{});
+
+function routeTo(route){
+  pages.forEach(p => sections[p].style.display = (p === route ? '' : 'none'));
+  navLinks.forEach(a => a.classList.toggle('active', a.dataset.route === route));
+  // special actions
+  if(route === 'shop') renderProducts();
+  if(route === 'home') renderFeatured();
+  if(route === 'cart') renderCart();
+  if(route === 'checkout') renderCheckout();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('[data-route]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    e.preventDefault();
+    routeTo(a.dataset.route);
+  });
+});
+document.getElementById('cta-shop').addEventListener('click',()=>routeTo('shop'));
+document.getElementById('cta-contact').addEventListener('click',()=>routeTo('contact'));
+
+/* ----------------------------------------------------
+   NAV: highlight active correctly on load
+   ---------------------------------------------------- */
+routeTo('home');
+
+/* ----------------------------------------------------
+   RENDER PRODUCTS GRID + SEARCH + FILTER + SORT
+   ---------------------------------------------------- */
+const productGrid = document.getElementById('product-grid');
+const featuredList = document.getElementById('featured-list');
+const resultsCount = document.getElementById('results-count');
+const searchInput = document.getElementById('search');
+const categorySelect = document.getElementById('category');
+const sortSelect = document.getElementById('sort');
+const clearFilters = document.getElementById('clear-filters');
+
+let filteredProducts = [...PRODUCTS];
+
+// populate category select
+(function populateCategories(){
+  const cats = [...new Set(PRODUCTS.map(p=>p.category))];
+  const frag = document.createDocumentFragment();
+  cats.forEach(c=>{
+    const opt = document.createElement('option');
+    opt.value = c; opt.textContent = c;
+    categorySelect.appendChild(opt);
+  });
+})();
+
+function formatCurrency(v){
+  return '$' + Number(v).toFixed(2);
+}
+
+function createThumb(title, color){
+  // create a colored square with initials
+  const initials = title.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+  return `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--accent);background:${color};border-radius:8px">${initials}</div>`;
+}
+
+function renderGrid(products){
+  productGrid.innerHTML = '';
+  resultsCount.textContent = products.length;
+  products.forEach(p=>{
+    const card = document.createElement('article');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="image">${createThumb(p.title, p.color)}</div>
+      <h3>${p.title}</h3>
+      <div class="desc">${p.desc}</div>
+      <div class="foot">
+        <div style="display:flex;flex-direction:column">
+          <div class="small">${p.category}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-weight:800">${formatCurrency(p.price)}</div>
+          <button class="btn ghost" data-id="${p.id}" aria-label="Quick view ${p.title}">View</button>
+          <button class="btn" data-add="${p.id}" aria-label="Add ${p.title} to cart">Add</button>
+        </div>
+      </div>
+    `;
+    productGrid.appendChild(card);
+  });
+}
+
+function renderProducts(){
+  // apply search / filter / sort
+  const q = (searchInput.value || '').trim().toLowerCase();
+  const cat = categorySelect.value;
+  const sort = sortSelect.value;
+
+  filteredProducts = PRODUCTS.filter(p=>{
+    const matchesQ = p.title.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q) || p.category.toLowerCase().includes(q);
+    const matchesCat = cat ? p.category === cat : true;
+    return matchesQ && matchesCat;
+  });
+
+  if(sort === 'price-asc') filteredProducts.sort((a,b)=>a.price - b.price);
+  if(sort === 'price-desc') filteredProducts.sort((a,b)=>b.price - a.price);
+
+  renderGrid(filteredProducts);
+}
+
+/* hooks */
+searchInput.addEventListener('input', renderProducts);
+categorySelect.addEventListener('change', renderProducts);
+sortSelect.addEventListener('change', renderProducts);
+clearFilters.addEventListener('click', ()=>{
+  searchInput.value = '';
+  categorySelect.value = '';
+  sortSelect.value = 'relevance';
+  renderProducts();
+});
+
+/* initial */
+renderProducts();
+
+/* FEATURED ON HOME */
+function renderFeatured(){
+  featuredList.innerHTML = '';
+  const featured = PRODUCTS.slice(0,3);
+  featured.forEach(p=>{
+    const el = document.createElement('div');
+    el.className = 'product';
+    el.innerHTML = `
+      <div class="thumb">${createThumb(p.title,p.color)}</div>
+      <div class="p-info">
+        <div class="p-title">${p.title}</div>
+        <div class="p-meta">${p.desc}</div>
+      </div>
+      <div class="p-price">${formatCurrency(p.price)}</div>
+    `;
+    featuredList.appendChild(el);
+  });
+}
+renderFeatured();
+
+/* ----------------------------------------------------
+   PRODUCT MODAL + WHATSAPP QUICK MESSAGE
+   ---------------------------------------------------- */
+const modalBackdrop = document.getElementById('product-modal');
+const closeModal = document.getElementById('close-modal');
+const modalTitle = document.getElementById('modal-title');
+const modalImage = document.getElementById('modal-image');
+const modalDesc = document.getElementById('modal-desc');
+const modalPrice = document.getElementById('modal-price');
+const modalCategory = document.getElementById('modal-category');
+const modalAdd = document.getElementById('modal-add');
+const modalQty = document.getElementById('modal-qty');
+const modalWhatsapp = document.getElementById('modal-whatsapp');
+
+let activeProduct = null;
+
+// open modal on view click
+productGrid.addEventListener('click', e=>{
+  const view = e.target.closest('button[data-id]');
+  const addBtn = e.target.closest('button[data-add]');
+  if(view){
+    const id = view.dataset.id;
+    openModal(id);
+  } else if(addBtn){
+    const id = addBtn.dataset.add;
+    addToCart(id,1);
+  }
+});
+
+function openModal(id){
+  const p = PRODUCTS.find(x=>x.id===id);
+  if(!p) return;
+  activeProduct = p;
+  modalTitle.textContent = p.title;
+  modalImage.innerHTML = createThumb(p.title,p.color);
+  modalDesc.textContent = p.desc;
+  modalPrice.textContent = formatCurrency(p.price);
+  modalCategory.textContent = p.category;
+  modalQty.value = 1;
+  // WhatsApp quick link (replace phone number in the whatsapp-float anchor above)
+  const phone = '254700000000'; // change to your phone number in international format (no plus sign)
+  modalWhatsapp.href = `https://wa.me/${phone}?text=${encodeURIComponent('Hello! I am interested in ' + p.title)}`;
+  modalBackdrop.style.display = 'grid';
+  modalBackdrop.setAttribute('aria-hidden','false');
+}
+
+closeModal.addEventListener('click', ()=>{ modalBackdrop.style.display='none'; modalBackdrop.setAttribute('aria-hidden','true') });
+modalBackdrop.addEventListener('click', e => { if(e.target === modalBackdrop){ modalBackdrop.style.display='none'; modalBackdrop.setAttribute('aria-hidden','true') } });
+
+modalAdd.addEventListener('click', ()=> {
+  if(!activeProduct) return;
+  const q = Math.max(1, Number(modalQty.value) || 1);
+  addToCart(activeProduct.id, q);
+  modalBackdrop.style.display='none';
+});
+
+/* ----------------------------------------------------
+   CART: add, remove, persist to localStorage
+   ---------------------------------------------------- */
+const CART_KEY = 'minimalshop_cart_v1';
+let CART = JSON.parse(localStorage.getItem(CART_KEY) || '{}');
+
+function saveCart(){
+  localStorage.setItem(CART_KEY, JSON.stringify(CART));
+  updateCartCount();
+}
+
+function updateCartCount(){
+  const count = Object.values(CART).reduce((s,i)=>s + i.qty,0);
+  document.getElementById('cart-count').textContent = count;
+}
+
+function addToCart(id, qty=1){
+  const prod = PRODUCTS.find(p=>p.id===id);
+  if(!prod) return;
+  if(!CART[id]) CART[id] = { ...prod, qty:0 };
+  CART[id].qty += qty;
+  saveCart();
+  alert(`Added ${qty} × ${prod.title} to cart`);
+}
+
+function renderCart(){
+  const list = document.getElementById('cart-list');
+  list.innerHTML = '';
+  const ids = Object.keys(CART);
+  if(ids.length === 0){
+    list.innerHTML = `<div class="small">Your cart is empty. Add some items from the shop.</div>`;
+    document.getElementById('summary-sub').textContent = '$0.00';
+    document.getElementById('summary-total').textContent = '$0.00';
+    updateCartCount();
+    return;
+  }
+  let subtotal = 0;
+  ids.forEach(id=>{
+    const item = CART[id];
+    const row = document.createElement('div');
+    row.className = 'cart-item';
+    row.innerHTML = `
+      <div style="width:70px">${createThumb(item.title, item.color)}</div>
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:700">${item.title}</div>
+          <div style="font-weight:800">${formatCurrency(item.price)}</div>
+        </div>
+        <div class="small" style="margin-top:6px">${item.desc}</div>
+        <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+          <div class="qty">
+            <button class="btn ghost" data-dec="${id}" aria-label="Decrease quantity">-</button>
+            <input class="input" data-qty="${id}" value="${item.qty}" style="width:64px;text-align:center" type="number" min="1">
+            <button class="btn ghost" data-inc="${id}" aria-label="Increase quantity">+</button>
+          </div>
+          <button class="btn ghost" data-remove="${id}" style="margin-left:8px">Remove</button>
+        </div>
+      </div>
+    `;
+    list.appendChild(row);
+    subtotal += item.price * item.qty;
+  });
+
+  document.querySelectorAll('[data-inc]').forEach(b=>{ b.addEventListener('click', ()=>{ const id=b.dataset.inc; CART[id].qty++; saveCart(); renderCart(); })});
+  document.querySelectorAll('[data-dec]').forEach(b=>{ b.addEventListener('click', ()=>{ const id=b.dataset.dec; CART[id].qty = Math.max(1, CART[id].qty-1); saveCart(); renderCart(); })});
+  document.querySelectorAll('[data-remove]').forEach(b=>{ b.addEventListener('click', ()=>{ const id=b.dataset.remove; delete CART[id]; saveCart(); renderCart(); })});
+  document.querySelectorAll('input[data-qty]').forEach(inp=>{
+    inp.addEventListener('change', ()=>{ const id=inp.dataset.qty; let v = Math.max(1, Number(inp.value) || 1); CART[id].qty = v; saveCart(); renderCart(); })
+  });
+
+  document.getElementById('summary-sub').textContent = formatCurrency(subtotal);
+  const total = subtotal + 5.00;
+  document.getElementById('summary-total').textContent = formatCurrency(total);
+  updateCartCount();
+}
+
+/* clear cart button */
+document.getElementById('clear-cart').addEventListener('click', ()=>{
+  if(confirm('Clear cart?')) { CART = {}; saveCart(); renderCart(); }
+});
+
+/* proceed to checkout */
+document.getElementById('checkout-btn').addEventListener('click', ()=>{
+  if(Object.keys(CART).length === 0){ alert('Cart is empty. Add items before checkout.'); return; }
+  routeTo('checkout');
+});
+
+/* clear cart on startup if invalid */
+updateCartCount();
+
+/* ----------------------------------------------------
+   CHECKOUT: render items and simulate order placement
+   ---------------------------------------------------- */
+function renderCheckout(){
+  const container = document.getElementById('checkout-items');
+  container.innerHTML = '';
+  let subtotal = 0;
+  Object.values(CART).forEach(i=>{
+    const el = document.createElement('div');
+    el.style.display = 'flex'; el.style.justifyContent = 'space-between';
+    el.innerHTML = `<div><strong>${i.title}</strong> × ${i.qty}</div><div>${formatCurrency(i.price * i.qty)}</div>`;
+    container.appendChild(el);
+    subtotal += i.price * i.qty;
+  });
+  document.getElementById('co-sub').textContent = formatCurrency(subtotal);
+  document.getElementById('co-total').textContent = formatCurrency(subtotal + 5.00);
+}
+
+/* handle checkout form */
+document.getElementById('checkout-form').addEventListener('submit', e=>{
+  e.preventDefault();
+  const name = document.getElementById('ship-name').value.trim();
+  const phone = document.getElementById('ship-phone').value.trim();
+  const address = document.getElementById('ship-address').value.trim();
+  if(!name || !phone || !address){ document.getElementById('checkout-status').textContent = 'Please fill required fields'; return; }
+  // simulate success
+  document.getElementById('checkout-status').textContent = 'Processing order...';
+  setTimeout(()=>{
+    const orderId = 'ORD' + Math.floor(Math.random()*90000 + 10000);
+    document.getElementById('checkout-status').textContent = `Order placed — ${orderId}. A copy will be sent via WhatsApp (demo).`;
+    // clear cart
+    CART = {}; saveCart(); renderCart();
+    // route to home
+    setTimeout(()=>{ routeTo('home') }, 1800);
+  }, 900);
+});
+
+/* ----------------------------------------------------
+   AUTH (Login / Signup) - animated modal
+   ---------------------------------------------------- */
+const authModal = document.getElementById('auth-modal');
+const openAuth = document.getElementById('open-auth');
+const tabLogin = document.getElementById('tab-login');
+const tabSignup = document.getElementById('tab-signup');
+const loginForm = document.getElementById('login-form');
+const signupForm = document.getElementById('signup-form');
+
+openAuth.addEventListener('click', ()=>{ authModal.style.display='grid'; authModal.setAttribute('aria-hidden','false'); });
+document.getElementById('login-guest').addEventListener('click', ()=>{ authModal.style.display='none'; authModal.setAttribute('aria-hidden','true'); alert('Continuing as guest (demo)'); });
+
+tabLogin.addEventListener('click', ()=>{
+  loginForm.style.display = 'block'; signupForm.style.display='none';
+  tabLogin.setAttribute('aria-selected','true'); tabSignup.setAttribute('aria-selected','false');
+});
+tabSignup.addEventListener('click', ()=>{
+  loginForm.style.display = 'none'; signupForm.style.display='block';
+  tabLogin.setAttribute('aria-selected','false'); tabSignup.setAttribute('aria-selected','true');
+});
+
+loginForm.addEventListener('submit', e=>{
+  e.preventDefault();
+  // demo only
+  const em = document.getElementById('login-email').value;
+  alert('Signed in as ' + em + ' (demo)');
+  authModal.style.display='none'; authModal.setAttribute('aria-hidden','true');
+});
+signupForm.addEventListener('submit', e=>{
+  e.preventDefault();
+  const name = document.getElementById('su-name').value;
+  alert('Account created for ' + name + ' (demo). You are signed in.');
+  authModal.style.display='none'; authModal.setAttribute('aria-hidden','true');
+});
+
+/* close auth when clicking backdrop */
+authModal.addEventListener('click', e => { if(e.target === authModal){ authModal.style.display='none'; authModal.setAttribute('aria-hidden','true') } });
+
+/* ----------------------------------------------------
+   CONTACT FORM
+   ---------------------------------------------------- */
+document.getElementById('contact-form').addEventListener('submit', e=>{
+  e.preventDefault();
+  const name=document.getElementById('contact-name').value.trim();
+  const msg=document.getElementById('contact-message').value.trim();
+  if(!name || !msg){ document.getElementById('contact-status').textContent = 'Please add name and message'; return; }
+  document.getElementById('contact-status').textContent = 'Message sent (demo). We will reply on WhatsApp.';
+  // optionally open WhatsApp
+  setTimeout(()=>{ document.getElementById('contact-status').textContent=''; }, 2500);
+});
+
+/* prefill whatsapp contact anchor with phone */
+document.getElementById('contact-whatsapp').href = document.getElementById('whatsapp-float').href;
+
+/* ----------------------------------------------------
+   MISC UI EVENTS
+   ---------------------------------------------------- */
+document.getElementById('go-shop').addEventListener('click', ()=>routeTo('shop'));
+document.getElementById('tab-login').addEventListener('keydown', (e)=>{ if(e.key==='Enter') tabLogin.click(); });
+document.getElementById('tab-signup').addEventListener('keydown', (e)=>{ if(e.key==='Enter') tabSignup.click(); });
+
+/* product quick view via featured */
+featuredList.addEventListener('click', e=>{
+  const wrap = e.target.closest('.product');
+  if(!wrap) return;
+  const title = wrap.querySelector('.p-title').textContent;
+  const found = PRODUCTS.find(p=>p.title===title);
+  if(found) openModal(found.id);
+});
+
+/* ESC to close modals */
+document.addEventListener('keydown', e=>{
+  if(e.key === 'Escape'){
+    modalBackdrop.style.display='none'; modalBackdrop.setAttribute('aria-hidden','true');
+    authModal.style.display='none'; authModal.setAttribute('aria-hidden','true');
+  }
+});
+
+/* product view from anywhere by delegating on document */
+document.body.addEventListener('click', e=>{
+  const v = e.target.closest('[data-view-id]');
+  if(v){
+    e.preventDefault(); openModal(v.dataset.viewId);
+  }
+});
+
+/* show year in footer */
+document.getElementById('year').textContent = new Date().getFullYear();
+
+/* When loading the cart route from a nav click (mobile), ensure we show correct section */
+document.querySelectorAll('#nav-list a').forEach(a=>{
+  a.addEventListener('click', ()=> {
+    // if "Cart" is clicked while cart empty, show cart page anyway
+    if(a.dataset.route === 'cart') setTimeout(()=>renderCart(), 50);
+  });
+});
+
+</script>
+
+</body>
+</html>
